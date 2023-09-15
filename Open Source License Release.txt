@@ -1,8 +1,0 @@
-The following opensource files under the MIT license are free to be used by the company listed below for the lifetime of the product listed below. All other usage requires special permission from Craig Comberbach to be freed from the MIT license.
-
-All other files not listed below and that are subject to an open source license are still enforceable. Closed source files are not covered by this release.
-
-Company: 
-Product: 
-Open Source Files:
-	
