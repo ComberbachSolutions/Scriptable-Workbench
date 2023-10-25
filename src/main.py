@@ -1,23 +1,35 @@
-import spd3303x
 import time
+import spd3303x
 
 
 
-# with spd3303x.EthernetDevice("169.254.140.1") as dev:
-#     dev.CH1.set_voltage(8)
-#     dev.CH1.set_current(0.75)
-#     dev.CH1.set_output(True)
-#     print(dev.CH1.get_current())
-#     print(dev.CH1.get_voltage())
-#     print(dev.CH1.measure_voltage())
-#     print(dev.CH1.measure_current())
-#     dev.CH3.set_output(True)
+def Delay_In_Seconds(seconds=1.0):
+    seconds = max(seconds, 0.25)
+    time.sleep(seconds)
 
-time_to_sleep = 0.25 # 250ms isn't perfect, but it does work most of the time
-with spd3303x.EthernetDevice("169.254.140.1") as dev:
-    dev.CH1.set_output(True)
-    for voltage in range(0,32+1):
-        dev.CH1.set_voltage(voltage)
-        dev.CH1.set_current(voltage/10)
-        time.sleep(time_to_sleep)
-    dev.CH1.set_voltage(0)
+def Setup_For_MUA():
+    with spd3303x.EthernetDevice("169.254.140.1") as dev:
+        dev.CH1.set_output(False)
+        # dev.CH1.set_voltage(3.3)
+        # dev.CH1.set_voltage(6.6)
+        # dev.CH1.set_voltage(10.0)
+        # dev.CH1.set_voltage(12.0)
+        # dev.CH1.set_current(0.05)
+        # dev.CH1.set_output(True)
+        print("*****CH1*****")
+        print(f"Set to\t{dev.CH1.get_voltage()}V\t{dev.CH1.get_current()}A")
+        print(f"Actual\t{dev.CH1.measure_voltage()}V\t{dev.CH1.measure_current()}A\t{dev.CH1.measure_power()}W")
+
+        # dev.CH2.set_output(False)
+        dev.CH2.set_voltage(30.0)
+        dev.CH2.set_current(0.10)
+        dev.CH2.set_output(True)
+        Delay_In_Seconds(1.0)
+        dev.CH2.set_current(0.05)
+        print("*****CH2*****")
+        print(f"Set to\t{dev.CH2.get_voltage()}V\t{dev.CH2.get_current()}A")
+        print(f"Actual\t{dev.CH2.measure_voltage()}V\t{dev.CH2.measure_current()}A\t{dev.CH2.measure_power()}W")
+
+        dev.CH3.set_output(False)
+
+Setup_For_MUA()
