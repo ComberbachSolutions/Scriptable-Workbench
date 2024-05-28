@@ -1,4 +1,7 @@
 import pyvisa
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+import numpy as np
 
 
 
@@ -89,13 +92,60 @@ class Generic_Visa_Device:
 			print(f"[Write]\t{command[:self.terminal_width]}...")
 		else:
 			print(f"[Write]\t{command}")
-	 
+
 if __name__ == "__main__":
+	def live_plot():
+		# Generate random data to simulate live data
+		def generate_data():
+			while True:
+				measurement = float(U2741A._Read_Command("READ?"))
+				print_with_colour("Blue", f"Resistance: {measurement}{OHMs}")
+				yield measurement
+
+		# Initialize the plot
+		fig, ax = plt.subplots()
+		xdata, ydata = [], []
+		ln, = plt.plot([], [], 'b-')
+
+		def init():
+			ax.set_xlim(0, 100)
+			ax.set_ylim(0, 1)
+			return ln,
+
+		def update(frame):
+			xdata.append(frame)
+			ydata.append(next(data_gen))
+			
+			# Keep only the last 100 data points
+			if len(xdata) > 100:
+				xdata.pop(0)
+				ydata.pop(0)
+			
+			ln.set_data(xdata, ydata)
+			
+			if frame >= 1:
+				ax.set_xlim(max(0, frame-100), frame)
+			else:
+				ax.set_xlim(0,1)
+				
+			if len(xdata) > 1:
+				yLowerLimit = (101 * min(ydata) - max(ydata)) / 100
+				yUpperLimit = (101 * max(ydata) - min(ydata)) / 100
+			else:
+				yLowerLimit = ydata[0] * 0.99
+				yUpperLimit = ydata[0] * 1.01
+
+			ax.set_ylim(yLowerLimit - 0.1, yUpperLimit + 0.1)
+			return ln,
+
+		data_gen = generate_data()
+
+		ani = animation.FuncAnimation(fig, update, frames=range(1000), init_func=init, blit=False)
+		plt.show()
+
 	try:
 		U2741A = Generic_Visa_Device("USB0::0x0957::0x4918::MY64010002::0::INSTR")
 		U2741A._Write_Command("CONF:RES AUTO, MAX")
-		print_with_colour("Blue", f"Resistance: {float(U2741A._Read_Command("READ?"))}{OHMs}")
-		print_with_colour("Blue", f"Resistance: {float(U2741A._Read_Command("READ?"))}{OHMs}")
-		print_with_colour("Blue", f"Resistance: {float(U2741A._Read_Command("READ?"))}{OHMs}")
-	except:
-		print("Something failed during operation")
+		live_plot()
+	except Exception as error_reason:
+		print(f"Failed during operation: {error_reason}")
