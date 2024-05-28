@@ -2,6 +2,7 @@ import pyvisa
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import numpy as np
+import itertools
 
 
 
@@ -115,14 +116,14 @@ if __name__ == "__main__":
 		def update(frame):
 			xdata.append(frame)
 			ydata.append(next(data_gen))
-			
+
 			# Keep only the last 100 data points
 			if len(xdata) > 100:
 				xdata.pop(0)
 				ydata.pop(0)
-			
+
 			ln.set_data(xdata, ydata)
-			
+
 			if frame >= 1:
 				ax.set_xlim(max(0, frame-100), frame)
 			else:
@@ -136,11 +137,13 @@ if __name__ == "__main__":
 				yUpperLimit = ydata[0] * 1.01
 
 			ax.set_ylim(yLowerLimit - 0.1, yUpperLimit + 0.1)
+
 			return ln,
 
 		data_gen = generate_data()
+		frame_gen = itertools.count()
 
-		ani = animation.FuncAnimation(fig, update, frames=range(1000), init_func=init, blit=False)
+		ani = animation.FuncAnimation(fig, update, frames=frame_gen, init_func=init, blit=False)
 		plt.show()
 
 	try:
