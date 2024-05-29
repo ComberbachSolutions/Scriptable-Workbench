@@ -96,8 +96,7 @@ class Generic_Visa_Device:
 
 if __name__ == "__main__":
 	def live_plot():
-		# Generate random data to simulate live data
-		def generate_data():
+		def measure_value():
 			while True:
 				measurement = float(U2741A._Read_Command("READ?"))
 				print_with_colour("Blue", f"Resistance: {measurement}{OHMs}")
@@ -107,6 +106,8 @@ if __name__ == "__main__":
 		fig, ax = plt.subplots()
 		xdata, ydata = [], []
 		ln, = plt.plot([], [], 'b-')
+		yLowerLimit = 0
+		yUpperLimit = 1
 
 		def init():
 			ax.set_xlim(0, 100)
@@ -114,8 +115,9 @@ if __name__ == "__main__":
 			return ln,
 
 		def update(frame):
+			nonlocal yLowerLimit, yUpperLimit
 			xdata.append(frame)
-			ydata.append(next(data_gen))
+			ydata.append(next(measurement))
 
 			# Keep only the last 100 data points
 			if len(xdata) > 100:
@@ -129,18 +131,20 @@ if __name__ == "__main__":
 			else:
 				ax.set_xlim(0,1)
 				
-			if len(xdata) > 1:
-				yLowerLimit = (101 * min(ydata) - max(ydata)) / 100
-				yUpperLimit = (101 * max(ydata) - min(ydata)) / 100
+			A = 0.63
+			if frame == 0:
+				yLowerLimit = min(ydata)
+				yUpperLimit = max(ydata)
 			else:
-				yLowerLimit = ydata[0] * 0.99
-				yUpperLimit = ydata[0] * 1.01
+				delta = (max(ydata) - min(ydata)) / 100
+				yLowerLimit = yLowerLimit * A + (min(ydata) - delta) * (1 - A)
+				yUpperLimit = yUpperLimit * A + (max(ydata) + delta) * (1 - A)
 
-			ax.set_ylim(yLowerLimit - 0.1, yUpperLimit + 0.1)
+			ax.set_ylim(yLowerLimit, yUpperLimit)
 
 			return ln,
 
-		data_gen = generate_data()
+		measurement = measure_value()
 		frame_gen = itertools.count()
 
 		ani = animation.FuncAnimation(fig, update, frames=frame_gen, init_func=init, blit=False)
