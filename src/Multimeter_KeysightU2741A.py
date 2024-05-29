@@ -108,11 +108,13 @@ if __name__ == "__main__":
 		ln, = plt.plot([], [], 'b-')
 		yLowerLimit = 0
 		yUpperLimit = 1
+		text = ax.text(0.02, 0.95, '', transform=ax.transAxes)
 
 		def init():
 			ax.set_xlim(0, 100)
 			ax.set_ylim(0, 1)
-			return ln,
+			text.set_text('')
+			return ln, text
 
 		def update(frame):
 			nonlocal yLowerLimit, yUpperLimit
@@ -137,12 +139,14 @@ if __name__ == "__main__":
 				yUpperLimit = max(ydata)
 			else:
 				delta = (max(ydata) - min(ydata)) / 100
+				if delta < 1:
+					delta = 1
 				yLowerLimit = yLowerLimit * A + (min(ydata) - delta) * (1 - A)
 				yUpperLimit = yUpperLimit * A + (max(ydata) + delta) * (1 - A)
 
 			ax.set_ylim(yLowerLimit, yUpperLimit)
-
-			return ln,
+			text.set_text(f'Resistance: {ydata[-1]:.2f}Ω')
+			return ln, text
 
 		measurement = measure_value()
 		frame_gen = itertools.count()
